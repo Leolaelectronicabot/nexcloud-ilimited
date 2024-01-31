@@ -2238,7 +2238,7 @@ async def webdav(filex,user_id,msg,username):
 async def send_txt_file(user_id,txt):
   await bot.send_document(user_id,txt)
 
-    async def webdav2(file,usid,msg,username):
+async def webdav2(file,usid,msg,username):
       try:
         proxy = Configs[username]["gp"]
         user = Config[username]["username"]
@@ -2314,7 +2314,6 @@ async def send_txt_file(user_id,txt):
             print(ex)
       except Exception as ex:
         print(str(ex))
-
 
 @async_decorator
 def proccess(filex,user_id,msg,username):
