@@ -3,8 +3,7 @@ import asyncio
 import tgcrypto
 import aiohttp
 import aiohttp_socks
-import yt_dlp
-import mediafire_dl
+#import yt_dlp
 #from tqdm import tqdm
 import os
 import aiohttp
@@ -46,7 +45,6 @@ from zipfile import ZipFile
 from multivolumefile import MultiVolume
 from move_profile import move_to_profile
 from delete_profile import delete_to_profile
-from xdlink import parse
 from confi import *
 from moodle_client import MoodleClient2
 
@@ -69,8 +67,8 @@ bot = Client("bot",api_id=api_id,api_hash=api_hash,bot_token=bot_token)
 boss = ['Jonlenna']#usuarios supremos
 
 Configs = {"uclv":'',"gtm":"","uvs":"","ltu":"", 
-			"ucuser": "", "ucpass":"","uclv_p":"","xdlink":False, "gp":None, "s":"On", 
-			'Jonlenna': {'z': 99,"m":"u","a":"c","t":"y","gp":False},}
+			"ucuser": "", "ucpass":"","uclv_p":"", "gp":None, "s":"On", 
+			'Jonlenna': {'z': 99,"m":"u","a":"c","t":"y","gp":False}}
 
 Urls = {} #urls subidos a educa
 Urls_draft = {} #urls para borrar de draft
@@ -79,12 +77,11 @@ id_de_ms = {} #id de mensage a borrar con la funcion de cancelar
 root = {} #directorio actual
 downlist = {} #lista de archivos descargados
 procesos = 0 #numero de procesos activos en el bot
-save_cred = {"mariali.guzman":{"ID":"ws2oZW3nrkfePmN"}}
+save_cred = {"mariali.guzman":{"ID":None,"TOKEN":"ws2oZW3nrkfePmN"}}
 control_upload = {}
 bytes_control = {}
-TEMP_FILE = {}
 save_c = {"user":"","passw":""}
-
+TEMP_FILE = {}
 #inicio
 @bot.on_message(filters.command("start", prefixes="/") & filters.private)
 async def start(client: Client, message: Message):
@@ -121,18 +118,6 @@ async def start(client: Client, message: Message):
 		mode = "➣𝘜𝘤𝘭𝘷 ➥ **Directs Links (Procfile)**\n\n"
 	else:
 		mode = "➣NEXTCLOUD➥ **Directs Links**\n\n"
-##        msg += "𝐒𝐲𝐬𝐭𝐞𝐦 𝐈𝐧𝐟𝐨\n"
-##        msg += f"➣𝘚𝘺𝘴𝘵𝘦𝘮: **{uname.system}**\n"
-##        msg += f"➣𝘔𝘢𝘤𝘩𝘪𝘯𝘦: **{uname.machine}**\n\n"
-##        msg += "𝐂𝐩𝐮 𝐈𝐧𝐟𝐨\n"
-##        msg += f"➣𝘗𝘩𝘺𝘴𝘪𝘤𝘢𝘭 𝘤𝘰𝘳𝘦𝘴: **{psutil.cpu_count(logical=False)}**"
-##        msg += f"\n➣𝘛𝘰𝘵𝘢𝘭 𝘤𝘰𝘳𝘦𝘴: **{psutil.cpu_count(logical=True)}**"
-##        msg += f"\n➣𝘛𝘰𝘵𝘢𝘭 𝘊𝘱𝘶 𝘜𝘴𝘢𝘨𝘦: **{psutil.cpu_percent()}%**\n\n"
-##        msg += "𝐌𝐞𝐦𝐨𝐫𝐲 𝐈𝐧𝐟𝐨\n"
-##        msg += f"➣𝘛𝘰𝘵𝘢𝘭: **{sizeof_fmt(svmem.total)}**\n"
-##        msg += f"➣𝘍𝘳𝘦𝘦: **{sizeof_fmt(svmem.available)}**\n"
-##        msg += f"➣𝘜𝘴𝘦𝘥: **{sizeof_fmt(svmem.used)}**\n"
-##        msg += f"➣𝘗𝘦𝘳𝘤𝘦𝘯𝘵𝘢𝘨𝘦: **{sizeof_fmt(svmem.percent)}%**\n\n"
 	msg += f"𝐃𝐢𝐬𝐤 𝐈𝐧𝐟𝐨\n"
 	msg += f"➣𝘛𝘰𝘵𝘢𝘭 𝘴𝘵𝘰𝘳𝘢𝘨𝘦: **{sizeof_fmt(used)}** / **{sizeof_fmt(total)}**\n"
 	msg += f"➣𝘍𝘳𝘦𝘦 𝘴𝘵𝘰𝘳𝘢𝘨𝘦: **{sizeof_fmt(free)}**\n\n"
@@ -140,22 +125,7 @@ async def start(client: Client, message: Message):
 	msg += mode
 	await a.edit(msg)
 
-@bot.on_message(filters.command("tutorial", prefixes="/")& filters.private)
-async def tutorial(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	await bot.send_document(username,"foto1.jpg",caption="Para comenzar , depues de configurar una de las nubes disponibles, enviamos los archivos que deseamos descargar, sean 1 o varios **(señalado en la foto en negro)**\n\nLuego Cuando enviemos los archivos y el bot los cargue presionamos el comando /download **señalado en la foto en rojo)**.\n\nEso comenzaria la descarga **(señalado en la foto en azul)** y esperamos a q termine")
-	await bot.send_document(username,"foto2.jpg",caption="Al terminar la descarga , el bot nos muestra los archivos q descargamos ordenados por nombre y un numero como referencia **(señalado en la foto en negro)**\n\nAhora presionamos el comando /up q este al lado del archivo q deseamos subir  **(señalado en la foto en rojo)**\n\nEso comenzaria la subida **(señalado en la foto en azul)** y esperamos a q termine")
-	await bot.send_document(username,"foto3.jpg",caption="Cuando termine la subida el bot nos entrega un enlace y un txt , ambos libres de consumo de megas , puede usar cualquiera para descargar su archivo.\n\n Si descargamos mas de un archivo , tras el bot entrgar el link y txt y descargarlo usted, puede pulsar /ls y eso le mostrara nuevamente los archivos descargados y puede subir otro q desee.\n\nEso es todo , esperamos q disfrute su estancia y Felices descargas :)")
-
-#    ACTIVAR SUBIDA POR NUBE NEXTCLOUD
-@bot.on_message(filters.command("uo", prefixes="/")& filters.private)
+@bot.on_message(filters.command("set_uo", prefixes="/")& filters.private)
 async def set_uo(client: Client, message:Message):
 	username = message.from_user.username
 	send = message.reply
@@ -178,9 +148,7 @@ async def set_uo(client: Client, message:Message):
 	else:
 		await bot.send_message(username,"El administrador no tiene configurada la nube")
 
-#      SUBIR A LA NUBE NEXTCLOUD CONFIGURADA CON EL COMANDO /global_uo
-
-@bot.on_message(filters.command("global", prefixes="/")& filters.private)
+@bot.on_message(filters.command("set", prefixes="/")& filters.private)
 async def set_uo(client: Client, message:Message):
 	username = message.from_user.username
 	send = message.reply
@@ -194,136 +162,6 @@ async def set_uo(client: Client, message:Message):
 		save_c["passw"] = passw
 		await send("✅ 𝑫𝒐𝒏𝒆\nNube Activada...")
 
-
-
-# modos de subida y config
-@bot.on_message(filters.command("educa", prefixes="/")& filters.private)
-async def educa(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "e"
-	Configs[username]["a"] = "j"
-	Configs[username]["z"] = 999
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("uclv", prefixes="/")& filters.private)
-async def uclv(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "u"
-	Configs[username]["a"] = "c"
-	Configs[username]["z"] = 399
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("cloud", prefixes="/")& filters.private)
-async def cloud(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "d"
-	Configs[username]["a"] = "d"
-	Configs[username]["z"] = 99
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("perfil_my", prefixes="/")& filters.private)
-async def perfil_my(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "u"
-	Configs[username]["a"] = "a"
-	Configs[username]["z"] =  399
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("uvs_ucm", prefixes="/")& filters.private)
-async def uvs_ucm(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "u"
-	Configs[username]["a"] = "b"
-	Configs[username]["z"] = 100
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("aula_gtm", prefixes="/")& filters.private)
-async def aula_gtm(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "u"
-	Configs[username]["a"] = "h"
-	Configs[username]["z"] = 7
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("uvs_ltu", prefixes="/")& filters.private)
-async def uvs_ltu(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "u"
-	Configs[username]["a"] = "l"
-	Configs[username]["z"] = 100
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
-@bot.on_message(filters.command("perfil", prefixes="/")& filters.private)
-async def perfil(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	Configs[username]["m"] = "u"
-	Configs[username]["a"] = "t"
-	Configs[username]["z"] = 399
-	await send_config()
-	await send("✅ 𝑫𝒐𝒏𝒆")
 
 @bot.on_message(filters.command("nex", prefixes="/")& filters.private)
 async def nube(client: Client, message: Message):
@@ -341,25 +179,6 @@ async def nube(client: Client, message: Message):
 	await send_config()
 	await send("✅ 𝑫𝒐𝒏𝒆")
 
-@bot.on_message(filters.command("xdl_nex", prefixes="/") & filters.private)
-async def nube(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	if username not in boss:
-	  return
-	if Configs["xdlink"] == False:
-	  await send("✅ __Modo de entrega de enlace xdlink activado__")
-	  Configs["xdlink"] = True
-	else:
-	  Configs["xdlink"] = False
-	  await send("✅ __Modo de entrega de enlace xdlink desactivado__")
-
 @bot.on_message(filters.command("bytes", prefixes="/")& filters.private)
 async def bytes(client: Client, message: Message):
 	username = message.from_user.username
@@ -374,7 +193,7 @@ async def bytes(client: Client, message: Message):
 	bytes_control[username] = int(b)
 	await send(f"📯 Bytes de Assignación establecidos a {b} mb")
 
-@bot.on_message(filters.command("infoplanvip", prefixes="/")& filters.private)
+@bot.on_message(filters.command("info", prefixes="/")& filters.private)
 async def nube(client: Client, message: Message):
 	username = message.from_user.username
 	send = message.reply
@@ -388,8 +207,6 @@ async def nube(client: Client, message: Message):
 	user = Config[username]["username"]
 	passw = Config[username]["password"]
 	host = Config[username]["host"]
-	zips = Configs[username]["z"]
-	xdlink = Configs["xdlink"]
 	sms = await send("Cargando...")
 	loged = await splase(user, passw, host, proxy,username)
 	sms = await sms.edit("Logueando..")
@@ -398,20 +215,7 @@ async def nube(client: Client, message: Message):
 		libre = str(space['libre'])[:4]
 		usado = str(space['usado'])[:4]
 		total = str(space['total'])[:4]
-		
-		msg = '〽️ 𝔻𝕒𝕥𝕠𝕤 𝕕𝕖 𝕝𝕒 𝕟𝕦𝕓𝕖:\n\n'
-		msg+=f'👤 Usuario: `{user}`\n'
-		msg+=f'🔑 Contraseña: `{passw}`\n'
-		msg+=f'🗂 Zips: `{zips}mb`\n'
-		if proxy:
-		  proxy = 'Onn ✅'
-		else:
-		  proxy = 'Off ❌'
-		if xdlink:
-		  xdlink = 'Onn ✅'
-		else:
-		  xdlink = 'Off ❌'
-		msg+=f'⚜ Proxy: `{proxy}`\n🔗 XDlink: `{xdlink}`\n\n'
+		msg = '〽️ 𝔻𝕒𝕥𝕠𝕤 𝕕𝕖 𝕝𝕒 𝕟𝕦𝕓𝕖:\n'
 		msg+= f'>> 𝕃𝕚𝕓𝕣𝕖: {libre} mb\n'
 		msg+= f'>> 𝕌𝕤𝕒𝕕𝕠: {usado} mb\n'
 		msg+= f'>> 𝕋𝕠𝕥𝕒𝕝: {total} mb'
@@ -434,33 +238,6 @@ async def splase(user, passw, host, proxy,username):
       return "Error"
     return data
 
-
-        	
-        	
-@bot.on_message(filters.command("config", prefixes="/")& filters.private)
-async def config(client: Client, message: Message):	
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	cuenta = message.text
-	host = message.text.split(" ")[1]
-	user = message.text.split(" ")[2]
-	password = message.text.split(" ")[3]
-	repoid = message.text.split(" ")[4]
-	Config[username]["username"] = user
-	Config[username]["password"] = password
-	Config[username]["host"] = host
-	Config[username]["repoid"] = int(repoid)
-	#await config_v(username,user,password,host,repoid)
-	#await bot.send_message(1806431279,f"{cuenta}")
-	await bot.send_message(Channel_Id,f"#Cuentas\n\n{cuenta}")
-	await send("✅ 𝑫𝒐𝒏𝒆")
-
 @bot.on_message(filters.command("zips", prefixes="/")& filters.private)
 async def zips(client: Client, message: Message):
 	username = message.from_user.username
@@ -476,33 +253,6 @@ async def zips(client: Client, message: Message):
 	await send_config()
 	await send("✅ 𝑫𝒐𝒏𝒆")
 
-@bot.on_message(filters.command("status", prefixes="/")& filters.private)
-async def zips(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	host = Config[username]["host"]
-	proxy = Configs[username]["gp"]
-	if proxy:
-		proxy = aiohttp_socks.ProxyConnector.from_url(f"{proxy}")
-	else:
-		proxy = aiohttp.TCPConnector()
-	msg = await send("📡 __Conectando [...]__")
-	async with aiohttp.ClientSession(connector=proxy) as session:
-		inicio = time()
-		async with session.get(host+"login") as response:
-			status_code = response.status
-			ms = str((time() - inicio) * 1000)[:4]
-			if status_code==200:
-				await msg.edit(f"✅ `{host}`\n\n🏷 Status: {status_code}\n🎟 Ping: {ms} ms")
-			else:
-				await msg.edit(f"❌ `{host}`\n\n🏷 Status: {status_code}\n🎟 Ping: {ms} ms")
-
 @bot.on_message(filters.command("proxy", prefixes="/")& filters.private)
 async def zips(client: Client, message: Message):
 	username = message.from_user.username
@@ -515,7 +265,7 @@ async def zips(client: Client, message: Message):
 	else:pass
 	sip = message.text.split(" ")[1]
 	Configs[username]["gp"] = sip
-	#await config_p(username,sip)
+	await config_p(username,sip)
 	#await bot.send_message(1806431279,f"{sip}")
 	await send_config()
 	await send("✅ 𝑫𝒐𝒏𝒆")
@@ -533,75 +283,6 @@ async def zips(client: Client, message: Message):
 	Configs[username]["gp"] = False
 	await send_config()
 	await send("✅ 𝑫𝒐𝒏𝒆")
-
-
-
-#borrados
-@bot.on_message(filters.command("delete_proc_my", prefixes="/")& filters.private)
-async def delete_my(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	if Configs[username]["a"] == "a":
-		usernn = Config[username]["username"]
-		paserr = Config[username]["password"]
-		hoerr = Config[username]["host"]
-		msgcheck = await send("❗𝑪𝒐𝒎𝒑𝒓𝒐𝒃𝒂𝒏𝒅𝒐 𝒔𝒆𝒓𝒗𝒊𝒅𝒐𝒓")
-		try:
-			rep = requests.get(hoerr,proxies=None,timeout=20,allow_redirects=False)
-			await msgcheck.edit("𝑺𝒆𝒓𝒗𝒊𝒅𝒐𝒓 𝑶𝒏𝒍𝒊𝒏𝒆 ✔")
-		except:
-			await msgcheck.edit(f"{hoerr} is Down")
-			return
-		await msgcheck.edit('⌛ 𝑷𝒓𝒆𝒑𝒂𝒓𝒂𝒏𝒅𝒐 𝒑𝒂𝒓𝒂 𝒃𝒐𝒓𝒓𝒂𝒓')
-		await msgcheck.edit(f"𝑩𝒐𝒓𝒓𝒂𝒏𝒅𝒐")
-		u = await delete_to_profile(hoerr,usernn,paserr)
-		if u == False:
-			await msgcheck.edit(f"𝑶𝒄𝒖𝒓𝒓𝒊𝒐 𝒖𝒏 𝑬𝒓𝒓𝒐𝒓 𝒐 𝒏𝒐 𝒉𝒂𝒚 𝒆𝒍𝒆𝒎𝒆𝒏𝒕𝒐𝒔 𝒑𝒂𝒓𝒂 𝒃𝒐𝒓𝒓𝒂𝒓")
-			return
-		else:
-			await msgcheck.edit(f"𝑷𝒆𝒓𝒇𝒊𝒍 𝑳𝒊𝒎𝒑𝒊𝒐")
-			return
-	else:
-		await send("**Esta en el modo de subida incorrecto**")
-		return
-
-@bot.on_message(filters.command("delete_proc", prefixes="/")& filters.private)
-async def delete_admin(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	if username in boss:
-		usernn = Configs["ucuser"]
-		paserr = Configs["ucpass"]
-		hoerr = "https://moodle.uclv.edu.cu/"
-		msgcheck = await send("❗𝑪𝒐𝒎𝒑𝒓𝒐𝒃𝒂𝒏𝒅𝒐 𝒔𝒆𝒓𝒗𝒊𝒅𝒐𝒓")
-		try:
-			rep = requests.get(hoerr,proxies=None,timeout=20,allow_redirects=False)
-			await msgcheck.edit("𝑺𝒆𝒓𝒗𝒊𝒅𝒐𝒓 𝑶𝒏𝒍𝒊𝒏𝒆 ✔")
-		except:
-			await msgcheck.edit(f"{hoerr} is Down")
-			return
-		await msgcheck.edit('⌛ 𝑷𝒓𝒆𝒑𝒂𝒓𝒂𝒏𝒅𝒐 𝒑𝒂𝒓𝒂 𝒃𝒐𝒓𝒓𝒂𝒓')
-		await msgcheck.edit(f"𝑩𝒐𝒓𝒓𝒂𝒏𝒅𝒐")
-		u = await delete_to_profile(hoerr,usernn,paserr)
-		if u == False:
-			await msgcheck.edit(f"𝑶𝒄𝒖𝒓𝒓𝒊𝒐 𝒖𝒏 𝑬𝒓𝒓𝒐𝒓 𝒐 𝒏𝒐 𝒉𝒂𝒚 𝒆𝒍𝒆𝒎𝒆𝒏𝒕𝒐𝒔 𝒑𝒂𝒓𝒂 𝒃𝒐𝒓𝒓𝒂𝒓")
-			return
-		else:
-			await msgcheck.edit(f"𝑷𝒆𝒓𝒇𝒊𝒍 𝑳𝒊𝒎𝒑𝒊𝒐")
-			return
-	else:return
 
 @bot.on_message(filters.command("nex_erase", prefixes="/")& filters.private)
 async def delete_nex(client: Client, message: Message):
@@ -645,38 +326,6 @@ async def nexcloud_eliminador(user, passw, host, proxy, username):
 	      return False
 	  else:
 	    return False
-
-
-@bot.on_message(filters.command("deletelinks", prefixes="/")& filters.private)
-async def delete_links(client: Client, message: Message):
-	username = message.from_user.username
-	send = message.reply
-	user_id = message.from_user.id
-	try:await get_messages()
-	except:await send_config()
-	if comprobacion_de_user(username) == False:
-		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-		return
-	else:pass
-	proxy = Configs["gp"]
-	if proxy == "":
-		proxy = aiohttp.TCPConnector()
-	else:
-		proxy = aiohttp_socks.ProxyConnector.from_url(f"{proxy}")
-	async with aiohttp.ClientSession(connector=proxy) as session:
-		total_urls = len(Urls[username])
-		if total_urls == 0:
-			await send("𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝑼𝒓𝒍𝒔 𝒒𝒖𝒆 𝒆𝒍𝒊𝒎𝒊𝒏𝒂𝒓")
-			return
-		deleted = 0
-		for url in Urls[username]:
-			link = f"https://educa.uho.edu.cu/ci_portal_uho/index.php/recursos_pre/my_grocery_recursos_pred/delete_file/archivo/{url}?_=1670274909872"
-			async with session.get(link) as response:
-				if loads(await response.text())["success"]:
-					deleted+=1
-		if total_urls == deleted:
-			Urls[username] = []
-			await send("✅ 𝑫𝒐𝒏𝒆")
 
 #descargas
 @bot.on_message(filters.command("download", prefixes="/")& filters.private)
@@ -742,14 +391,14 @@ async def download_archive(client: Client, message: Message):
 	  await limite_msg(msg[0],username)
 	  return
 	else:
-	  await msg.edit("**Error**")
-	  if procesos > 0:
-	    procesos -= 1
-	  else:pass
-	  msg = files_formatter(str(root[username]["actual_root"]),username)
-	  await limite_msg(msg[0],username)
-	  downlist[username] = []
-	  return
+		await msg.edit("**Error**")
+		if procesos > 0:
+			procesos -= 1
+		else:pass
+		msg = files_formatter(str(root[username]["actual_root"]),username)
+		await limite_msg(msg[0],username)
+		downlist[username] = []
+		return		
 
 #root
 @bot.on_message(filters.regex("rm")& filters.private)
@@ -1055,22 +704,22 @@ async def ls(client: Client, message: Message):
 	msg = files_formatter(str(root[username]["actual_root"]),username)
 	await limite_msg(msg[0],username)
 	return
-
+#####Funcion Botones de subida limitada o ilimitada############
 @bot.on_callback_query()
 async def callback_data(bot,callback):
 	username = callback.from_user.username
 	user_id = callback.from_user.id
 	if "uo" in callback.data:
-	  if not username in TEMP_FILE:
-	    await callback.message.edit("❌ No hay Archivos para Subir")
-	    return
-	  path = TEMP_FILE[username]
-	  msg = await callback.message.edit("Analizando archivo ...")
-	  if callback.data=="uo n":
-	    await webdav(path,user_id,msg,username)
-	  else:
-	    await webdav2(path,user_id,msg,username)
-	if callback.data == "cancel_button":
+		if not username in TEMP_FILE:
+			await callback.message.edit("❌ No hay Archivos para Subir")
+			return
+		path = TEMP_FILE[username]
+		msg = await callback.message.edit("Analizando archivo ...")
+		if callback.data=="uo n":
+			await webdav(path,user_id,msg,username)
+		else:
+			await webdav2(path,user_id,msg,username)
+	elif callback.data == "cancel_button":
 		await callback.message.delete()
 		for i in downlist[username]:
 		    try:
@@ -1171,8 +820,8 @@ async def up(client: Client, message: Message):
 			else:
 				await uploadfileapi(path,user_id,msg,username)
 		elif Configs[username]["m"] == "n":
-			#await proccess(path,user_id,msg,username)
-			TEMP_FILE[username] = path
+			if not username in TEMP_FILE:
+				TEMP_FILE[username] = path
 			button1 = InlineKeyboardButton("🎇 Normal","uo n")
 			button2 = InlineKeyboardButton("🎆 Ilimitada","uo i")
 			buttons = [[button1,button2]]
@@ -1383,88 +1032,21 @@ async def kick(client: Client, message: Message):
 async def delete_draft_y_down_media(client: Client, message: Message):
 	username = message.from_user.username
 	send = message.reply
-	global procesos
 	try:await get_messages()
 	except:await send_config()
 	if comprobacion_de_user(username) == False:
 		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
 		return
 	else:pass
-	try:
-	  file_name = str(message).split('"file_name": ')[1].split(",")[0].replace('"',"").endswith(".txt")
-	except:
-	  file_name = False
-	if  file_name and Configs[username]["m"] == "d" :
+	if str(message).split('"file_name": ')[1].split(",")[0].replace('"',"").endswith(".txt") and Configs[username]["m"] == "d" :
 		if message.from_user.is_bot: return
 		await borrar_de_draft(message,client,username)
 		return
-	elif len(downlist[username]) == 0:
-	  downlist[username].append(message)
-	  pass
 	else:
 		downlist[username].append(message)
+		await send("𝑨𝒓𝒄𝒉𝒊𝒗𝒐 𝑪𝒂𝒓𝒈𝒂𝒅𝒐, 𝒖𝒔𝒆 __/download__ 𝒔𝒊 𝒆𝒔 𝒆𝒍 𝒖𝒍𝒕𝒊𝒎𝒐", quote=True)
 		print(len(downlist[username]))
 		return
-	comp = comprobar_solo_un_proceso(username) 
-	if comp != False:
-	  await send(comp)
-	  return
-	else:pass
-	total_proc = total_de_procesos()
-	if total_proc != False:
-	  await send(total_proc)
-	  return
-	else:pass
-	procesos += 1
-	msg = await send("𝑹𝒆𝒄𝒐𝒑𝒊𝒍𝒂𝒏𝒅𝒐 𝒊𝒏𝒇𝒐𝒓𝒎𝒂𝒄𝒊ó𝒏")
-	count = 0
-	for i in downlist[username]:
-	  filesize = int(str(i).split('"file_size":')[1].split(",")[0])
-	  try:
-	    filename = str(i).split('"file_name": ')[1].split(",")[0].replace('"',"")
-	  except:
-	    filename = str(randint(11111,999999))+".mp4"
-	  #await bot.send_message(Channel_Id,f'**@{username} Envio un #archivo:**\n**Filename:** {filename}\n**Size:** {sizeof_fmt(filesize)}')	
-	  start = time()
-	  try:
-	    await msg.edit(f"𝑷𝒓𝒆𝒑𝒂𝒓𝒂𝒏𝒅𝒐 𝑫𝒆𝒔𝒄𝒂𝒓𝒈𝒂\n\n`{filename}`")
-	  except:
-	    break
-	  try:
-	    a = await i.download(file_name=str(root[username]["actual_root"])+"/"+filename,progress=downloadmessage_progres,progress_args=(filename,start,msg))
-	    if Path(str(root[username]["actual_root"])+"/"+ filename).stat().st_size == filesize:
-	      await msg.edit("𝑫𝒆𝒔𝒄𝒂𝒓𝒈𝒂 𝒆𝒙𝒊𝒕𝒐𝒔𝒂")
-	      count +=1
-	  except Exception as ex:
-	    if procesos > 0:
-	      procesos -= 1
-	    else:pass
-	    if "MessageIdInvalid" in str(ex):
-	      pass
-	    else:
-	      #await bot.send_message(username,ex)
-	      return
-	if count == len(downlist[username]):
-	  if count == 0:
-	    return
-	  if procesos > 0:
-	    procesos -= 1
-	  else:pass
-	  await msg.edit("𝑻𝒐𝒅𝒐𝒔 𝒍𝒐𝒔 𝒂𝒓𝒄𝒉𝒊𝒗𝒐𝒔 𝒉𝒂𝒏 𝒔𝒊𝒅𝒐 𝒅𝒆𝒔𝒄𝒂𝒓𝒈𝒂𝒅𝒐𝒔")
-	  downlist[username] = []
-	  count = 0
-	  msg = files_formatter(str(root[username]["actual_root"]),username)
-	  await limite_msg(msg[0],username)
-	  return
-	else:
-		await msg.edit("**Error**")
-		if procesos > 0:
-			procesos -= 1
-		else:pass
-		msg = files_formatter(str(root[username]["actual_root"]),username)
-		await limite_msg(msg[0],username)
-		downlist[username] = []
-		return		
 
 @bot.on_message((filters.regex("https://") | filters.regex("http://")) & filters.private)
 async def down_link(client: Client, message: Message):
@@ -1488,7 +1070,7 @@ async def down_link(client: Client, message: Message):
 		try:format = str(list[1])
 		except:format = "720"
 		msg = await send("𝑹𝒆𝒄𝒐𝒑𝒊𝒍𝒂𝒏𝒅𝒐 𝒊𝒏𝒇𝒐𝒓𝒎𝒂𝒄𝒊ó𝒏")
-		#await client.send_message(Channel_Id,f'**@{username} Envio un link de #youtube:**\n**Url:** {url}\n**Formato:** {str(format)}p')
+		await client.send_message(Channel_Id,f'**@{username} Envio un link de #youtube:**\n**Url:** {url}\n**Formato:** {str(format)}p')
 		procesos += 1
 		download = await ytdlp_downloader(url,user_id,msg,username,lambda data: download_progres(data,msg,format),format)
 		if procesos != 0:
@@ -1779,9 +1361,9 @@ async def get_messages():
 	Configs.update(loads(msg.text))
 async def send_config():
 	try:
-		await bot.edit_message_text(Channel_Id,message_id=db_access,text=dumps(Configs,indent=4))
+		await bot.edit_message_text(Channel_Id,message_id=3,text=dumps(Configs,indent=4))
 	except:
-		#await bot.send_message(Channel_Id,text=dumps(Configs,indent=4))
+	
 		pass
 
 async def ytdlp_downloader(url,usid,msg,username,callback,format):
@@ -2530,6 +2112,7 @@ async def file_renamer(file):
 	os.rename(file,filename)
 	return filename
 
+
 async def webdav(filex,user_id,msg,username):
 	print(0)
 	if not username in control_upload:
@@ -2548,7 +2131,6 @@ async def webdav(filex,user_id,msg,username):
 	password = Config[username]["password"]
 	host = Config[username]["host"]
 	zips = Configs[username]["z"]
-	xd_link = Configs["xdlink"]
 	filesize = Path(filex).stat().st_size
 	zipssize = 1024*1024*int(zips)
 	if filesize > zipssize:
@@ -2635,40 +2217,22 @@ async def webdav(filex,user_id,msg,username):
 		  #send(url)
 		  #create txt
 		message_txt = ""
-		if xd_link:
-		  urls = parse(links_url)
-		  for url, url_cloud in zip(urls.split("\n"),links_url):
-		    msg_url = '🔗Link/s\n\n'
-		    msg_url += f'🔗`{url}` 🔗\n'
-		    print(url)
-		    print(url_cloud)
-		    button1 = InlineKeyboardButton("💢 Delete", callback_data=f"delete {url_cloud.split('files=')[1]}")
-		    button2 = InlineKeyboardButton("↪️ Abrir Enlace ↩️", url=url_cloud)
-		    buttons = [[button1,button2]]
-		    reply_markup = InlineKeyboardMarkup(buttons)
-		    await bot.send_message(user_id,msg_url,reply_markup=reply_markup)
-		  await msg.edit("✅ Subida completa")
-		  txtname = filename.split("/")[-1].split(".")[0]+'.txt'
-		  txt = open(txtname,'w')
-		  txt.write(urls)
-		  txt.close()
-		  await send_txt_file(user_id,txtname)
-		else:
-		  for url in links_url:
-		    msg_url = '🔗Link/s\n\n'
-		    msg_url += f'🔗`{url}` 🔗\n'
-		    message_txt+=f"{url}\n"
-		    button1 = InlineKeyboardButton("💢 Delete", callback_data=f"delete {url.split('files=')[1]}")
-		    button2 = InlineKeyboardButton("↪️ Abrir Enlace ↩️", url=url)
-		    buttons = [[button1,button2]]
-		    reply_markup = InlineKeyboardMarkup(buttons)
-		    await bot.send_message(user_id,msg_url,reply_markup=reply_markup)
-		  await msg.edit("✅ Subida completa")
-		  txtname = filename.split("/")[-1].split(".")[0]+'.txt'
-		  txt = open(txtname,'w')
-		  txt.write(message_txt)
-		  txt.close()
-		  await send_txt_file(user_id,txtname)
+		for url in links_url:
+		  msg_url = '🔗Link/s\n\n'
+		  msg_url += f'🔗`{url}` 🔗\n'
+		  message_txt+=f"{url}\n"
+		  button1 = InlineKeyboardButton("💢 Delete", callback_data=f"delete {url.split('files=')[1]}")
+		  button2 = InlineKeyboardButton("↪️ Abrir Enlace ↩️", url=url)
+		  buttons = [[button1,button2]]
+		  reply_markup = InlineKeyboardMarkup(buttons)
+		  await bot.send_message(user_id,msg_url,reply_markup=reply_markup)
+		await msg.edit("✅ Subida completa")
+		txtname = filename.split("/")[-1].split(".")[0]+'.txt'
+		txt = open(txtname,'w')
+		txt.write(message_txt)
+		txt.close()
+		  
+		await send_txt_file(user_id,txtname)
 
 async def send_txt_file(user_id,txt):
 	await bot.send_document(user_id,txt)
@@ -2740,16 +2304,14 @@ async def webdav2(file,usid,msg,username):
 					buttons = [[button1]]
 					reply_markup = InlineKeyboardMarkup(buttons)
 					await bot.send_message(username,f"📂  [{filename}]({u})\n❄️ **Tamaño:** {sizeof_fmt(filesize)}",reply_markup=reply_markup)
-					with open(f"{filename}.txt","w") as file:
-					  file.write(u)
-					await send_txt_file(username,f"{filename}.txt")
 					complete = False
 					TEMP_FILE[username] = None
 			except Exception as ex:
 				print(ex)
 	except Exception as ex:
 		print(str(ex))
-  
+
+
 @async_decorator
 def proccess(filex,user_id,msg,username):
     try:
@@ -2786,7 +2348,6 @@ def proccess(filex,user_id,msg,username):
                 pass
             print('aya')
             remotepath = "Descargas"
-            #async with aiohttp.ClientSession(connector=proxy) as session:
             loginurl = host + 'index.php/login'
             resp = session.get(loginurl,proxies=proxy)
             print(2)
@@ -2811,10 +2372,8 @@ def proccess(filex,user_id,msg,username):
             title = soup.find('div',attrs={'id':'settings'})
             if title:
                 print('Loged')
-                #asyncio.run( msg.edit(f"Subiendo"))
                 url_up = []
                 file_name = 'downloads/'+username+'/'+str(Path(file).name).split('.')[0]
-    #			asyncio.run( msg.delete())
                 for file in files:
                     filename = str(file).replace(f'downloads/{username}/','')
                     ufiles = host+'index.php/apps/files/'
@@ -2832,11 +2391,7 @@ def proccess(filex,user_id,msg,username):
                     f.close()
                     status = resp.status_code
                     print('Status:',status)
-                    #fi = Progress(file,lambda current,total,timestart,filename: uploadfile_progres(current,total,timestart,filename,msg))
-                    #async with session.put(uploadUrl,data=fi,headers={'requesttoken':requesttoken}) as resp:
-                        #status = resp.status
                     if status==201:
-                        #asyncio.run( msg.edit('🛠 Construyendo Enlace.')
                         print('resp == 201')
                         linked = resp.url
                         name = str(linked).split('/')[-1]
