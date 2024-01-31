@@ -58,6 +58,7 @@ import uuid
 import random
 
 import io
+import contextlib
 
 api_id = 28146160
 api_hash = "05d80a5935831931b5a16d14f8289b8c"
@@ -820,8 +821,8 @@ async def up(client: Client, message: Message):
       else:
         await uploadfileapi(path,user_id,msg,username)
     elif Configs[username]["m"] == "n":
-      if not username in TEMP_FILE:
-        TEMP_FILE[username] = path
+      #await proccess(path,user_id,msg,username)
+      TEMP_FILE[username] = path
       button1 = InlineKeyboardButton("🎇 Normal","uo n")
       button2 = InlineKeyboardButton("🎆 Ilimitada","uo i")
       buttons = [[button1,button2]]
@@ -1481,7 +1482,7 @@ class MoodleClient:
     async with self.session.post(urlw,data=query,headers=self.headers,ssl=False) as response:
       text = await response.text()	
     try:
-      a = findall("https?://[^\s\<\>]+[a-zA-z0-9]",loads(text)["event"]["description"])[-1].replace("pluginfile.php/","webservice/pluginfile.php/")+"?token="+token	
+      a = findall("https?://[^\\s\\<\\>]+[a-zA-z0-9]",loads(text)["event"]["description"])[-1].replace("pluginfile.php/","webservice/pluginfile.php/")+"?token="+token	
       return a , url	
     except:
       return url		
@@ -2078,7 +2079,7 @@ async def pid(host,user,password,session):
     #print(requesttoken)
     timezone = 'America/Mexico_City'
     timezone_offset = '-5'
-    payload = {'user':user,'password':password,'timezone':timezone,'timezone_offset':timezone_offset,'requesttoken':requesttoken};
+    payload = {'user':user,'password':password,'timezone':timezone,'timezone_offset':timezone_offset,'requesttoken':requesttoken}
     async with session.post(loginurl, data=payload) as resp:
       print('Login Exito!!')
       text = await resp.text()
@@ -2237,79 +2238,82 @@ async def webdav(filex,user_id,msg,username):
 async def send_txt_file(user_id,txt):
   await bot.send_document(user_id,txt)
 
-async def webdav2(file,usid,msg,username):
-  try:
-    proxy = Configs[username]["gp"]
-    user = Config[username]["username"]
-    password = Config[username]["password"]
-    host = "https://nube.uo.edu.cu/"
-    if proxy:
-      proxy = aiohttp_socks.ProxyConnector.from_url(f"{proxy}")
-    else:
-      proxy = aiohttp.TCPConnector()
-    file = await file_renamer(file)
-    filename = file.split("/")[-1]
-    filesize = Path(file).stat().st_size
-    headers={"User-Agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"}
-    async with aiohttp.ClientSession(connector=proxy) as session:
-      await msg.edit(f"Conectando 🔴")
-      ids = await pid(host,user,password,session)
-      #login
-      async with session.get(host+"index.php/login",headers=headers) as resp:
-        html = await resp.text()
-      soup = BeautifulSoup(html,'html.parser')
-      requesttoken = soup.find('head')['data-requesttoken']
-      print(requesttoken)
-      timezone = 'America/Mexico_City'
-      timezone_offset = '-5'
-      payload = {'user':user,'password':password,'timezone':timezone,'timezone_offset':timezone_offset,'requesttoken':requesttoken}
-      async with session.post(host+"index.php/login",data=payload,headers=headers) as resp:
-        print(f"login {resp.status}")
-      async with session.get(host+"index.php/apps/files/") as resp:
-        html = await resp.text()
-      soup = BeautifulSoup(html,'html.parser')
-      requesttoken = soup.find('head')['data-requesttoken']
-      print(requesttoken)
-      await msg.edit(f"Conectado 🟢")
+    async def webdav2(file,usid,msg,username):
       try:
-        webdav_url = host+"remote.php/dav/uploads/"+ids+"/"+ generate()
-        try:
-          async with session.request("MKCOL", webdav_url,headers={"requesttoken":requesttoken,**headers}) as resp:
-            print("MKCOL "+str(resp.status))
-        except:
-          await msg.edit("Este servidor está temporalmente fuera de servicio [await_please]")
-          return
-        print("up_webdav")
-        mime_type, _ = mimetypes.guess_type(file)
-        if not mime_type:
-          mime_type = "application/x-7z-compressed"
-        complete = True
-        await msg.edit(f"⬆️ Uploading 0 de {sizeof_fmt(filesize)}")
-        with open(file, 'rb') as f:
-          offset = 0
-          vchunk = 10
-          while True:
-            file_chunk = f.read(vchunk*1024*1024)
-            if not file_chunk:
-              break
-            async with session.put(f"{webdav_url}/{offset}",data=file_chunk,headers={'Content-Type': mime_type,"requesttoken":requesttoken}) as resp:
-              try:
-                await msg.edit(f"⬆️ Uploading {sizeof_fmt(offset)} de {sizeof_fmt(filesize)}")
-              except:pass
-            offset+= len(file_chunk)
-          print("Finalizado")
-          await msg.edit("✅ **Finalizado** ✅")
-          u = webdav_url+"/.file"
-          button1 = InlineKeyboardButton("📲 Descargar Archivo",url=u)
-          buttons = [[button1]]
-          reply_markup = InlineKeyboardMarkup(buttons)
-          await bot.send_message(username,f"📂  [{filename}]({u})\n❄️ **Tamaño:** {sizeof_fmt(filesize)}",reply_markup=reply_markup)
-          complete = False
-          TEMP_FILE[username] = None
+        proxy = Configs[username]["gp"]
+        user = Config[username]["username"]
+        password = Config[username]["password"]
+        host = "https://nube.uo.edu.cu/"
+        if proxy:
+          proxy = aiohttp_socks.ProxyConnector.from_url(f"{proxy}")
+        else:
+          proxy = aiohttp.TCPConnector()
+        file = await file_renamer(file)
+        filename = file.split("/")[-1]
+        filesize = Path(file).stat().st_size
+        headers={"User-Agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"}
+        async with aiohttp.ClientSession(connector=proxy) as session:
+          await msg.edit(f"Conectando 🔴")
+          ids = await pid(host,user,password,session)
+          #login
+          async with session.get(host+"index.php/login",headers=headers) as resp:
+            html = await resp.text()
+          soup = BeautifulSoup(html,'html.parser')
+          requesttoken = soup.find('head')['data-requesttoken']
+          print(requesttoken)
+          timezone = 'America/Mexico_City'
+          timezone_offset = '-5'
+          payload = {'user':user,'password':password,'timezone':timezone,'timezone_offset':timezone_offset,'requesttoken':requesttoken}
+          async with session.post(host+"index.php/login",data=payload,headers=headers) as resp:
+            print(f"login {resp.status}")
+          async with session.get(host+"index.php/apps/files/") as resp:
+            html = await resp.text()
+          soup = BeautifulSoup(html,'html.parser')
+          requesttoken = soup.find('head')['data-requesttoken']
+          print(requesttoken)
+          await msg.edit(f"Conectado 🟢")
+          try:
+            webdav_url = host+"remote.php/dav/uploads/"+ids+"/"+ generate()
+            try:
+              async with session.request("MKCOL", webdav_url,headers={"requesttoken":requesttoken,**headers}) as resp:
+                print("MKCOL "+str(resp.status))
+            except:
+              await msg.edit("Este servidor está temporalmente fuera de servicio [await_please]")
+              return
+            print("up_webdav")
+            mime_type, _ = mimetypes.guess_type(file)
+            if not mime_type:
+              mime_type = "application/x-7z-compressed"
+            complete = True
+            await msg.edit(f"⬆️ Uploading 0 de {sizeof_fmt(filesize)}")
+            with open(file, 'rb') as f:
+              offset = 0
+              vchunk = 10
+              while True:
+                file_chunk = f.read(vchunk*1024*1024)
+                if not file_chunk:
+                  break
+                async with session.put(f"{webdav_url}/{offset}",data=file_chunk,headers={'Content-Type': mime_type,"requesttoken":requesttoken}) as resp:
+                  try:
+                    await msg.edit(f"⬆️ Uploading {sizeof_fmt(offset)} de {sizeof_fmt(filesize)}")
+                  except:pass
+                offset+= len(file_chunk)
+              print("Finalizado")
+              await msg.edit("✅ **Finalizado** ✅")
+              u = webdav_url+"/.file"
+              button1 = InlineKeyboardButton("📲 Descargar Archivo",url=u)
+              buttons = [[button1]]
+              reply_markup = InlineKeyboardMarkup(buttons)
+              await bot.send_message(username,f"📂  [{filename}]({u})\n❄️ **Tamaño:** {sizeof_fmt(filesize)}",reply_markup=reply_markup)
+              with open(f"{filename}.txt","w") as file:
+                file.write(u)
+              await send_txt_file(username,f"{filename}.txt")
+              complete = False
+              TEMP_FILE[username] = None
+          except Exception as ex:
+            print(ex)
       except Exception as ex:
-        print(ex)
-  except Exception as ex:
-    print(str(ex))
+        print(str(ex))
 
 
 @async_decorator
@@ -2348,6 +2352,7 @@ def proccess(filex,user_id,msg,username):
                 pass
             print('aya')
             remotepath = "Descargas"
+            #async with aiohttp.ClientSession(connector=proxy) as session:
             loginurl = host + 'index.php/login'
             resp = session.get(loginurl,proxies=proxy)
             print(2)
@@ -2372,8 +2377,10 @@ def proccess(filex,user_id,msg,username):
             title = soup.find('div',attrs={'id':'settings'})
             if title:
                 print('Loged')
+                #asyncio.run( msg.edit(f"Subiendo"))
                 url_up = []
                 file_name = 'downloads/'+username+'/'+str(Path(file).name).split('.')[0]
+    #			asyncio.run( msg.delete())
                 for file in files:
                     filename = str(file).replace(f'downloads/{username}/','')
                     ufiles = host+'index.php/apps/files/'
@@ -2391,7 +2398,11 @@ def proccess(filex,user_id,msg,username):
                     f.close()
                     status = resp.status_code
                     print('Status:',status)
+                    #fi = Progress(file,lambda current,total,timestart,filename: uploadfile_progres(current,total,timestart,filename,msg))
+                    #async with session.put(uploadUrl,data=fi,headers={'requesttoken':requesttoken}) as resp:
+                        #status = resp.status
                     if status==201:
+                        #asyncio.run( msg.edit('🛠 Construyendo Enlace.')
                         print('resp == 201')
                         linked = resp.url
                         name = str(linked).split('/')[-1]
