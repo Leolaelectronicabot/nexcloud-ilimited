@@ -1,0 +1,3 @@
+Bot_token = "6609900741:AAGFiNL5p6V0L0sWRY35LYwjsiqZo5sI4J8"
+chanel_id = -1001799642467
+db_access = 13779
