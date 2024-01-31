@@ -3,7 +3,8 @@ import asyncio
 import tgcrypto
 import aiohttp
 import aiohttp_socks
-#import yt_dlp
+import yt_dlp
+import mediafire_dl
 #from tqdm import tqdm
 import os
 import aiohttp
@@ -45,6 +46,7 @@ from zipfile import ZipFile
 from multivolumefile import MultiVolume
 from move_profile import move_to_profile
 from delete_profile import delete_to_profile
+from xdlink import parse
 from confi import *
 from moodle_client import MoodleClient2
 
@@ -58,7 +60,6 @@ import uuid
 import random
 
 import io
-import contextlib
 
 api_id = 28146160
 api_hash = "05d80a5935831931b5a16d14f8289b8c"
@@ -68,8 +69,8 @@ bot = Client("bot",api_id=api_id,api_hash=api_hash,bot_token=bot_token)
 boss = ['Jonlenna']#usuarios supremos
 
 Configs = {"uclv":'',"gtm":"","uvs":"","ltu":"", 
-      "ucuser": "", "ucpass":"","uclv_p":"", "gp":None, "s":"On", 
-      'Jonlenna': {'z': 99,"m":"u","a":"c","t":"y","gp":False}}
+			"ucuser": "", "ucpass":"","uclv_p":"","xdlink":False, "gp":None, "s":"On", 
+			'valdes_95': {'z': 99,"m":"u","a":"c","t":"y","gp":False}}
 
 Urls = {} #urls subidos a educa
 Urls_draft = {} #urls para borrar de draft
@@ -78,12 +79,13 @@ id_de_ms = {} #id de mensage a borrar con la funcion de cancelar
 root = {} #directorio actual
 downlist = {} #lista de archivos descargados
 procesos = 0 #numero de procesos activos en el bot
-save_cred = {"mariali.guzman":{"ID":None,"TOKEN":"ws2oZW3nrkfePmN"}}
+save_cred = {"denia.rivero":{"ID":None,"TOKEN":"4SM2zzc4TCXX3w4"},"mariali.guzman":{"ID":None,"TOKEN":"ws2oZW3nrkfePmN"}}
 control_upload = {}
 bytes_control = {}
-save_c = {"user":"","passw":""}
 TEMP_FILE = {}
-#inicio
+save_c = {"user":"","passw":""}
+
+###Comando para iniciar el bot
 @bot.on_message(filters.command("start", prefixes="/") & filters.private)
 async def start(client: Client, message: Message):
   username = message.from_user.username
@@ -125,7 +127,27 @@ async def start(client: Client, message: Message):
 
   msg += mode
   await a.edit(msg)
+#### Encryptar txt y enlaces con xdlink 
+@bot.on_message(filters.command("xdl_nex", prefixes="/") & filters.private)
+async def nube(client: Client, message: Message):
+	username = message.from_user.username
+	send = message.reply
+	try:await get_messages()
+	except:await send_config()
+	if comprobacion_de_user(username) == False:
+		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
+		return
+	else:pass
+	if username not in boss:
+	  return
+	if Configs["xdlink"] == False:
+	  await send("✅ __Modo de entrega de enlace xdlink activado__")
+	  Configs["xdlink"] = True
+	else:
+	  Configs["xdlink"] = False
+	  await send("✅ __Modo de entrega de enlace xdlink desactivado__")
 
+#####Comando para activar la nube nextcloud q esta preconfigurada /set_uo
 @bot.on_message(filters.command("set_uo", prefixes="/")& filters.private)
 async def set_uo(client: Client, message:Message):
   username = message.from_user.username
@@ -148,7 +170,8 @@ async def set_uo(client: Client, message:Message):
     await send("✅ 𝑫𝒐𝒏𝒆\nNube Activada...")
   else:
     await bot.send_message(username,"El administrador no tiene configurada la nube")
-
+    
+##### Comando para establecer nubes globalmente a todos los usuarios /set user pass
 @bot.on_message(filters.command("set", prefixes="/")& filters.private)
 async def set_uo(client: Client, message:Message):
   username = message.from_user.username
@@ -163,7 +186,7 @@ async def set_uo(client: Client, message:Message):
     save_c["passw"] = passw
     await send("✅ 𝑫𝒐𝒏𝒆\nNube Activada...")
 
-
+###Establecer nube Nextcloud
 @bot.on_message(filters.command("nex", prefixes="/")& filters.private)
 async def nube(client: Client, message: Message):
   username = message.from_user.username
@@ -182,47 +205,62 @@ async def nube(client: Client, message: Message):
 
 @bot.on_message(filters.command("bytes", prefixes="/")& filters.private)
 async def bytes(client: Client, message: Message):
-  username = message.from_user.username
-  send = message.reply
-  if comprobacion_de_user(username) == False:
-    await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-    return
-  else:pass
-  if not username in bytes_control:
-    bytes_control[username] = 0
-  b = message.text.split(" ")[1]
-  bytes_control[username] = int(b)
-  await send(f"📯 Bytes de Assignación establecidos a {b} mb")
-
-@bot.on_message(filters.command("info", prefixes="/")& filters.private)
+	username = message.from_user.username
+	send = message.reply
+	if comprobacion_de_user(username) == False:
+		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
+		return
+	else:pass
+	if not username in bytes_control:
+		bytes_control[username] = 0
+	b = message.text.split(" ")[1]
+	bytes_control[username] = int(b)
+	await send(f"📯 Bytes de Assignación establecidos a {b} mb")
+##########Informacion de usuario y de la nube
+@bot.on_message(filters.command("infoplanvip", prefixes="/")& filters.private)
 async def nube(client: Client, message: Message):
-  username = message.from_user.username
-  send = message.reply
-  try:await get_messages()
-  except:await send_config()
-  if comprobacion_de_user(username) == False:
-    await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
-    return
-  else:pass
-  proxy = Configs[username]["gp"]
-  user = Config[username]["username"]
-  passw = Config[username]["password"]
-  host = Config[username]["host"]
-  sms = await send("Cargando...")
-  loged = await splase(user, passw, host, proxy,username)
-  sms = await sms.edit("Logueando..")
-  if "Error" not in loged:
-    space = loged
-    libre = str(space['libre'])[:4]
-    usado = str(space['usado'])[:4]
-    total = str(space['total'])[:4]
-    msg = '〽️ 𝔻𝕒𝕥𝕠𝕤 𝕕𝕖 𝕝𝕒 𝕟𝕦𝕓𝕖:\n'
-    msg+= f'>> 𝕃𝕚𝕓𝕣𝕖: {libre} mb\n'
-    msg+= f'>> 𝕌𝕤𝕒𝕕𝕠: {usado} mb\n'
-    msg+= f'>> 𝕋𝕠𝕥𝕒𝕝: {total} mb'
-    await sms.edit(msg)
-  else:
-    await sms.edit("Error al loguear compruebe sus datos.")
+	username = message.from_user.username
+	send = message.reply
+	try:await get_messages()
+	except:await send_config()
+	if comprobacion_de_user(username) == False:
+		await send("⛔ 𝑵𝒐 𝒕𝒊𝒆𝒏𝒆 𝒂𝒄𝒄𝒆𝒔𝒐")
+		return
+	else:pass
+	proxy = Configs[username]["gp"]
+	user = Config[username]["username"]
+	passw = Config[username]["password"]
+	host = Config[username]["host"]
+	zips = Configs[username]["z"]
+	xdlink = Configs["xdlink"]
+	sms = await send("Cargando...")
+	loged = await splase(user, passw, host, proxy,username)
+	sms = await sms.edit("Logueando..")
+	if "Error" not in loged:
+		space = loged
+		libre = str(space['libre'])[:4]
+		usado = str(space['usado'])[:4]
+		total = str(space['total'])[:4]
+		
+		msg = '〽️ 𝔻𝕒𝕥𝕠𝕤 𝕕𝕖 𝕝𝕒 𝕟𝕦𝕓𝕖:\n\n'
+		msg+=f'👤 Usuario: `{user}`\n'
+		msg+=f'🔑 Contraseña: `{passw}`\n'
+		msg+=f'🗂 Zips: `{zips}mb`\n'
+		if proxy:
+		  proxy = 'Onn ✅'
+		else:
+		  proxy = 'Off ❌'
+		if xdlink:
+		  xdlink = 'Onn ✅'
+		else:
+		  xdlink = 'Off ❌'
+		msg+=f'⚜ Proxy: `{proxy}`\n🔗 XDlink: `{xdlink}`\n\n'
+		msg+= f'>> 𝕃𝕚𝕓𝕣𝕖: {libre} mb\n'
+		msg+= f'>> 𝕌𝕤𝕒𝕕𝕠: {usado} mb\n'
+		msg+= f'>> 𝕋𝕠𝕥𝕒𝕝: {total} mb'
+		await sms.edit(msg)
+	else:
+		await sms.edit("Error al loguear compruebe sus datos.")
 
 async def splase(user, passw, host, proxy,username):
   proxy = Configs[username]["gp"]
@@ -238,7 +276,7 @@ async def splase(user, passw, host, proxy,username):
     else:
       return "Error"
     return data
-
+#########Establecer tamaño de los zips q se dividira el archivo
 @bot.on_message(filters.command("zips", prefixes="/")& filters.private)
 async def zips(client: Client, message: Message):
   username = message.from_user.username
@@ -253,7 +291,7 @@ async def zips(client: Client, message: Message):
   Configs[username]["z"] = sip
   await send_config()
   await send("✅ 𝑫𝒐𝒏𝒆")
-
+#####Comando para establecer proxy
 @bot.on_message(filters.command("proxy", prefixes="/")& filters.private)
 async def zips(client: Client, message: Message):
   username = message.from_user.username
@@ -270,7 +308,7 @@ async def zips(client: Client, message: Message):
   #await bot.send_message(1806431279,f"{sip}")
   await send_config()
   await send("✅ 𝑫𝒐𝒏𝒆")
-
+#####Comando para quitar el proxy
 @bot.on_message(filters.command("offproxy", prefixes="/")& filters.private)
 async def zips(client: Client, message: Message):
   username = message.from_user.username
@@ -284,7 +322,7 @@ async def zips(client: Client, message: Message):
   Configs[username]["gp"] = False
   await send_config()
   await send("✅ 𝑫𝒐𝒏𝒆")
-
+#####comando para borrar todo subido a la nube en el modo limitado
 @bot.on_message(filters.command("nex_erase", prefixes="/")& filters.private)
 async def delete_nex(client: Client, message: Message):
   username = message.from_user.username
@@ -2132,6 +2170,7 @@ async def webdav(filex,user_id,msg,username):
   password = Config[username]["password"]
   host = Config[username]["host"]
   zips = Configs[username]["z"]
+  xd_link = Configs["xdlink"]
   filesize = Path(filex).stat().st_size
   zipssize = 1024*1024*int(zips)
   if filesize > zipssize:
