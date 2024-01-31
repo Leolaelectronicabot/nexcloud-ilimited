@@ -1,3 +1,3 @@
-Bot_token = "6609900741:AAGFiNL5p6V0L0sWRY35LYwjsiqZo5sI4J8"
-chanel_id = -1001799642467
-db_access = 13779
+Bot_token = "6607617536:AAFN4Xok88GF-DTfFJdSQNYYDJw50r1Eam0"
+chanel_id = -1001847478446
+db_access = 3
